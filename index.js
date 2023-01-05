@@ -27,6 +27,17 @@ app.get("/products", async (req, res) => {
   const products = await ProductsCollection.find({}).toArray();
   res.send(products);
 });
+app.get("/userproducts", async (req, res) => {
+  let query = {};
+  if (req.query.email) {
+    query = {
+      email: req.query.email,
+    };
+  }
+  const cursor = ProductsCollection.find(query);
+  const products = await cursor.toArray();
+  res.send(products);
+});
 app.get("/", async (req, res) => {
   res.send("Homepage is working");
 });
