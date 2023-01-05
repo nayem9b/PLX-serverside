@@ -38,6 +38,18 @@ app.get("/userproducts", async (req, res) => {
   const products = await cursor.toArray();
   res.send(products);
 });
+app.get("/allproducts/:id", async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: ObjectId(id) };
+  const requestedProduct = await ProductsCollection.findOne(query);
+  res.send(requestedProduct);
+});
+app.get("/checkout/:id", async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: ObjectId(id) };
+  const checkout = await ProductsCollection.findOne(query);
+  res.send(checkout);
+});
 app.get("/", async (req, res) => {
   res.send("Homepage is working");
 });
