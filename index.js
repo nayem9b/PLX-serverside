@@ -60,7 +60,9 @@ app.get("/checkout/:id", async (req, res) => {
 });
 // Stripe payment intent
 app.post("/create-payment-intent", async (req, res) => {
+  console.log(req.body);
   const checkout = req.body;
+  console.log(checkout);
   const price = checkout.price;
   const amount = price * 100;
 
