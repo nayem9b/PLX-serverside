@@ -4,6 +4,8 @@ require("dotenv").config();
 const { MongoClient, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -18,15 +20,19 @@ app.post("/userInfo", async (req, res) => {
   const result = await usersCollection.insertOne(userInfo);
   res.send(result);
 });
+// Add a new product from the form
 app.post("/products", async (req, res) => {
   const addedProduct = req.body;
   const result = await ProductsCollection.insertOne(addedProduct);
   res.send(result);
 });
+// Get all the products in the homepage
 app.get("/products", async (req, res) => {
   const products = await ProductsCollection.find({}).toArray();
   res.send(products);
 });
+
+// What perticular user has added
 app.get("/userproducts", async (req, res) => {
   let query = {};
   if (req.query.email) {
@@ -38,6 +44,8 @@ app.get("/userproducts", async (req, res) => {
   const products = await cursor.toArray();
   res.send(products);
 });
+
+//
 app.get("/allproducts/:id", async (req, res) => {
   const id = req.params.id;
   const query = { _id: ObjectId(id) };
@@ -49,6 +57,21 @@ app.get("/checkout/:id", async (req, res) => {
   const query = { _id: ObjectId(id) };
   const checkout = await ProductsCollection.findOne(query);
   res.send(checkout);
+});
+// Stripe payment intent
+app.post("/create-payment-intent", async (req, res) => {
+  const checkout = req.body;
+  const price = checkout.price;
+  const amount = price * 100;
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    currency: "usd",
+    amount: amount,
+    payment_method_types: ["card"],
+  });
+  res.send({
+    clientSecret: paymentIntent.client_secret,
+  });
 });
 app.get("/", async (req, res) => {
   res.send("Homepage is working");
