@@ -75,6 +75,17 @@ app.post("/create-payment-intent", async (req, res) => {
     clientSecret: paymentIntent.client_secret,
   });
 });
+app.patch("/products/:id", async (req, res) => {
+  const { id } = req.params;
+
+  const result = await ProductsCollection.updateOne(
+    { _id: ObjectId(id) },
+    {
+      $set: req.body,
+    }
+  );
+  res.send(result);
+});
 app.get("/", async (req, res) => {
   res.send("Homepage is working");
 });
