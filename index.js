@@ -28,7 +28,13 @@ app.post("/products", async (req, res) => {
 });
 // Get all the products in the homepage
 app.get("/products", async (req, res) => {
-  const products = await ProductsCollection.find({}).toArray();
+  const products = await ProductsCollection.find().toArray();
+  res.send(products);
+});
+app.get("/unsoldproducts", async (req, res) => {
+  const products = await ProductsCollection.find({
+    status: "unsold",
+  }).toArray();
   res.send(products);
 });
 
@@ -44,6 +50,18 @@ app.get("/userproducts", async (req, res) => {
   const products = await cursor.toArray();
   res.send(products);
 });
+// What perticular user has added
+app.get("/mypurchase", async (req, res) => {
+  let query = {};
+  if (req.query.email) {
+    query = {
+      payer: req.query.email,
+    };
+  }
+  const cursor = ProductsCollection.find(query);
+  const mypurchase = await cursor.toArray();
+  res.send(mypurchase);
+});
 
 //
 app.get("/allproducts/:id", async (req, res) => {
@@ -58,6 +76,16 @@ app.get("/checkout/:id", async (req, res) => {
   const checkout = await ProductsCollection.findOne(query);
   res.send(checkout);
 });
+
+// // My purchase
+// app.get("/mypurchase/:email", async (req, res) => {
+//   console.log(req.params.email);
+//   const email = req.params.email;
+//   const query = { payer: email };
+//   const purchase = await ProductsCollection.find(query);
+//   res.send(purchase);
+// });
+
 // Stripe payment intent
 app.post("/create-payment-intent", async (req, res) => {
   console.log(req.body);
@@ -65,7 +93,6 @@ app.post("/create-payment-intent", async (req, res) => {
   console.log(checkout);
   const price = checkout.price;
   const amount = price * 100;
-
   const paymentIntent = await stripe.paymentIntents.create({
     currency: "usd",
     amount: amount,
@@ -75,6 +102,7 @@ app.post("/create-payment-intent", async (req, res) => {
     clientSecret: paymentIntent.client_secret,
   });
 });
+// Update info after payment
 app.patch("/products/:id", async (req, res) => {
   const { id } = req.params;
 
